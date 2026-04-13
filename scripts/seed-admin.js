@@ -2,7 +2,11 @@ const bcrypt = require("bcrypt");
 const { Pool } = require("pg");
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'vk_training',
+  password: String(process.env.DB_PASSWORD || ''),
+  port: Number(process.env.DB_PORT || 5432),
 });
 
 const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
