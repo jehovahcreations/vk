@@ -1,0 +1,103 @@
+<% const pageTitle = "Payment Settings"; %>
+<%- include('../partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-500">Admin</p>
+          <h1 class="text-2xl font-semibold">Payment settings</h1>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <% if (flashMessages && flashMessages.length) { %>
+        <div class="space-y-2">
+          <% flashMessages.forEach((item) => { %>
+            <div class="card p-4">
+              <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <section class="grid gap-6 lg:grid-cols-3">
+        <div class="card p-6 lg:col-span-2">
+          <h2 class="text-xl font-semibold">Razorpay configuration</h2>
+          <p class="text-sm text-slate-500">Secrets are encrypted and never displayed.</p>
+          <form class="mt-6 space-y-5" method="POST" action="/admin/payment-settings">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <div>
+              <label class="text-sm font-medium">Key ID</label>
+              <input class="input mt-2" name="key_id" value="<%= settings.key_id %>" placeholder="rzp_test_xxxxx" required />
+            </div>
+            <div>
+              <label class="text-sm font-medium">Key Secret</label>
+              <input class="input mt-2" name="key_secret" type="password" value="<%= settings.key_secret || '' %>" placeholder="Enter new key secret" />
+              <p class="text-xs text-slate-500 mt-2">Leave blank to keep existing secret.</p>
+            </div>
+            <div>
+              <label class="text-sm font-medium">Webhook Secret</label>
+              <input class="input mt-2" name="webhook_secret" type="password" value="<%= settings.webhook_secret || '' %>" placeholder="Enter new webhook secret" />
+              <p class="text-xs text-slate-500 mt-2">Leave blank to keep existing secret.</p>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label class="text-sm font-medium">Environment</label>
+                <select class="input mt-2" name="environment">
+                  <option value="test" <%= settings.environment === 'test' ? 'selected' : '' %>>Test</option>
+                  <option value="live" <%= settings.environment === 'live' ? 'selected' : '' %>>Live</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <label class="flex items-center gap-2 text-sm text-slate-500">
+                  <input type="checkbox" name="is_active" class="accent-red-600" <%= settings.is_active ? 'checked' : '' %> />
+                  Enable payments
+                </label>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <button class="btn-primary" type="submit">Save settings</button>
+              <button class="btn-outline" type="submit" formaction="/admin/payment-settings/test">Test connection</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold">Status</h2>
+          <div class="mt-4 space-y-3 text-sm text-slate-500">
+            <div class="flex items-center justify-between">
+              <span>Provider</span>
+              <span class="text-slate-900 font-medium">Razorpay</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Environment</span>
+              <span class="text-slate-900 font-medium"><%= settings.environment %></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Status</span>
+              <span class="text-slate-900 font-medium"><%= settings.is_active ? 'Active' : 'Inactive' %></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Last updated</span>
+              <span class="text-slate-900 font-medium"><%= settings.updated_at ? new Date(settings.updated_at).toLocaleString() : 'Not set' %></span>
+            </div>
+          </div>
+          <div class="card p-4 mt-6 card-glow">
+            <p class="text-sm font-semibold">Security notice</p>
+            <p class="text-xs text-slate-600 mt-2">Secrets are encrypted at rest and never exposed in UI.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+<% const pageTitle = "Login - VK Training Consultency"; %>
+<%- include('../partials/auth-head') %>
+
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute -top-20 -right-24 h-64 w-64 rounded-full" style="background: rgba(151, 216, 243, 0.35);"></div>
+    <div class="absolute -bottom-24 -left-20 h-72 w-72 rounded-full" style="background: rgba(245, 139, 5, 0.2);"></div>
+  </div>
+  <div class="relative max-w-6xl mx-auto px-6 py-16 grid gap-10 lg:grid-cols-2">
+    <%- include('../partials/auth-brand-panel') %>
+    <div class="card p-10">
+      <h2 class="text-3xl font-semibold">Welcome back</h2>
+      <p class="text-slate-500 mt-2">Sign in to continue learning and earning.</p>
+      <%- include('../partials/auth-alert') %>
+      <form class="mt-6 space-y-5" method="POST" action="/login">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <%- include('../partials/form-input', { label: 'Email or phone', name: 'identifier', value: formData.identifier, placeholder: 'you@company.com' }) %>
+        <%- include('../partials/form-input', { label: 'Password', name: 'password', type: 'password', placeholder: '********', required: true }) %>
+        <div class="flex items-center justify-between text-sm text-slate-500">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="accent-red-600" /> Remember me
+          </label>
+          <a href="/forgot-password" class="text-slate-600">Forgot password?</a>
+        </div>
+        <button class="btn-primary w-full" type="submit">Login</button>
+      </form>
+      <p class="text-sm text-slate-500 mt-6">New here? <a class="text-slate-900 font-semibold" href="/register">Create an account</a></p>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

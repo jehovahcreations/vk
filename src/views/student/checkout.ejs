@@ -1,0 +1,135 @@
+<% const pageTitle = "Checkout"; %>
+<%- include('../partials/auth-head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="student-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../partials/sidebar-student') %>
+  <label for="student-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="student-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Student</p>
+            <h1 class="text-2xl font-semibold">Checkout</h1>
+          </div>
+        </div>
+        <a class="btn-outline" href="/student/purchases">My videos</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8">
+      <section class="grid gap-8 lg:grid-cols-2">
+        <div class="card p-8">
+          <h2 class="text-2xl font-semibold">Checkout</h2>
+          <p class="text-slate-500 mt-2">Secure pay-and-watch access.</p>
+          <div class="mt-6 space-y-4">
+            <div class="card p-4">
+              <p class="text-sm text-slate-500">Product</p>
+              <p class="text-lg font-semibold"><%= product.title %></p>
+              <p class="text-xs text-slate-500"><%= product.description || 'Premium content access' %></p>
+            </div>
+            <% if (offerPreview) { %>
+              <div class="card p-4">
+                <p class="text-sm text-slate-500">Affiliate markup</p>
+                <p class="text-sm font-semibold"><%= Number(offerPreview.markupPercent || 0).toFixed(2) %>%</p>
+                <p class="text-xs text-slate-500 mt-2">Base: <%= (Number(offerPreview.baseAmountInPaise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: product.currency || 'INR' }) %> · Markup: <%= (Number(offerPreview.markupAmountInPaise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: product.currency || 'INR' }) %></p>
+              </div>
+            <% } %>
+            <div class="flex items-center justify-between text-sm text-slate-500">
+              <span>Amount</span>
+              <span class="text-slate-900 font-semibold"><%= priceFormatted %></span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <span class="badge">Secure payment</span>
+              <span class="badge">Razorpay</span>
+            </div>
+          </div>
+          <button id="pay-button" class="btn-primary w-full mt-6">Pay with Razorpay</button>
+        </div>
+
+        <div class="card p-8">
+          <h3 class="text-xl font-semibold">Order summary</h3>
+          <div class="mt-6 space-y-4 text-sm text-slate-500">
+            <div class="flex items-center justify-between">
+              <span>Product type</span>
+              <span class="text-slate-900 font-medium"><%= product.type %></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Access</span>
+              <span class="text-slate-900 font-medium">Instant</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Support</span>
+              <span class="text-slate-900 font-medium">Priority</span>
+            </div>
+          </div>
+          <div class="mt-6 card p-4 card-glow">
+            <p class="text-sm font-semibold">Need help?</p>
+            <p class="text-xs text-slate-600">Payments are processed securely by Razorpay.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  const payButton = document.getElementById("pay-button");
+  payButton.addEventListener("click", async () => {
+    const response = await fetch("/student/payments/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-csrf-token": "<%= csrfToken %>"
+      },
+      body: JSON.stringify({
+        slug: "<%= product.slug %>",
+        offerCode: "<%= offerCode || '' %>"
+      })
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = { error: "Unable to create order" };
+    }
+
+    if (!response.ok) {
+      alert(data.error || "Unable to create order");
+      return;
+    }
+
+    const options = {
+      key: "<%= razorpayKeyId %>",
+      amount: data.amount,
+      currency: data.currency,
+      name: "VK Training Consultency",
+      description: data.product.description || "Premium content access",
+      order_id: data.orderId,
+      handler: async function (res) {
+        const verifyResponse = await fetch("/student/payments/verify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": "<%= csrfToken %>"
+          },
+          body: JSON.stringify(res)
+        });
+        const verifyData = await verifyResponse.json();
+        window.location.href = verifyData.redirectUrl || "/student/payments/success";
+      },
+      theme: { color: "#CE0303" }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  });
+</script>
+
+</body>
+</html>

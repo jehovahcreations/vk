@@ -1,0 +1,56 @@
+<% const pageTitle = "Categories"; %>
+<%- include('../partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="student-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../partials/sidebar-student') %>
+  <label for="student-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="student-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Student</p>
+            <h1 class="text-2xl font-semibold">Categories</h1>
+          </div>
+        </div>
+        <a class="btn-outline" href="/videos">Browse videos</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <section class="card p-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">Explore by category</h2>
+            <p class="text-sm text-slate-500">Pick a theme to focus your learning.</p>
+          </div>
+          <form class="flex flex-wrap gap-3" method="GET" action="/student/categories">
+            <input class="input w-64" name="search" value="<%= filters?.search || '' %>" placeholder="Search categories" />
+            <button class="btn-outline" type="submit">Filter</button>
+          </form>
+        </div>
+        <div class="grid gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-3">
+          <% if (!categories || !categories.length) { %>
+            <div class="card p-5 sm:col-span-2 lg:col-span-3">
+              <p class="text-sm text-slate-500">No categories found.</p>
+            </div>
+          <% } %>
+
+          <% (categories || []).forEach((category) => { %>
+            <div class="card p-5">
+              <p class="text-sm text-slate-500">Category</p>
+              <p class="text-lg font-semibold mt-2"><%= category.name %></p>
+              <p class="text-xs text-slate-500 mt-2"><%= category.description || 'Explore related videos in this category.' %></p>
+              <a class="btn-outline mt-4" href="/student/dashboard?search=<%= encodeURIComponent(category.name) %>">View videos</a>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

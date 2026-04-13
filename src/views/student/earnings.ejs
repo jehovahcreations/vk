@@ -1,0 +1,83 @@
+<% const pageTitle = "Earnings"; %>
+<%- include('../partials/auth-head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="student-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../partials/sidebar-student') %>
+  <label for="student-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="student-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Student</p>
+            <h1 class="text-2xl font-semibold">Earnings</h1>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <section class="grid gap-4 md:grid-cols-3">
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total earned</p>
+          <p class="text-2xl font-semibold">INR <%= (summary.totalEarningsInPaise / 100).toFixed(2) %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Credited</p>
+          <p class="text-2xl font-semibold">INR <%= (summary.creditedEarningsInPaise / 100).toFixed(2) %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Pending</p>
+          <p class="text-2xl font-semibold">INR <%= (summary.pendingEarningsInPaise / 100).toFixed(2) %></p>
+        </div>
+      </section>
+
+      <section class="card p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Commission history</h2>
+          <span class="badge"><%= summary.totalCommissions %> records</span>
+        </div>
+        <div class="mt-6 overflow-x-auto">
+          <table class="table-base min-w-[880px]">
+            <thead>
+              <tr>
+                <th>Buyer</th>
+                <th>Video</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!commissions.length) { %>
+                <tr>
+                  <td colspan="6" class="text-center text-slate-500 py-6">No earnings yet. Share your affiliate code to start earning.</td>
+                </tr>
+              <% } %>
+              <% commissions.forEach((item) => { %>
+                <tr>
+                  <td>
+                    <div class="font-medium"><%= item.buyer_name %></div>
+                    <div class="text-xs text-slate-500"><%= item.buyer_email %></div>
+                  </td>
+                  <td><%= item.product_title || '-' %></td>
+                  <td><%= Number(item.commission_percent || 0).toFixed(2) %>%</td>
+                  <td>INR <%= (Number(item.commission_amount_in_paise || 0) / 100).toFixed(2) %></td>
+                  <td><span class="badge"><%= item.status %></span></td>
+                  <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<% const pageTitle = "Video Management"; %>
+<%- include('partials/head') %>
+
+<div class="flex min-h-screen">
+  <%- include('partials/sidebar-admin') %>
+  <main class="flex-1 bg-slate-50">
+    <div class="px-6 py-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-semibold">Video management</h1>
+          <p class="text-slate-500">Organize, price, and publish premium content.</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="btn-outline">Import CSV</button>
+          <button class="btn-primary">Upload new video</button>
+        </div>
+      </div>
+
+      <div class="card p-6 mt-8">
+        <div class="flex flex-wrap gap-3">
+          <input class="input w-60" placeholder="Search videos" />
+          <select class="input w-48">
+            <option>All categories</option>
+            <option>Leadership</option>
+            <option>Product</option>
+            <option>Marketing</option>
+          </select>
+          <select class="input w-48">
+            <option>Status: Any</option>
+            <option>Published</option>
+            <option>Draft</option>
+            <option>Review</option>
+          </select>
+          <button class="btn-outline">Filter</button>
+        </div>
+        <table class="table-base mt-6">
+          <thead>
+            <tr>
+              <th>Video</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Executive Leadership Labs</td>
+              <td>Leadership</td>
+              <td>$79</td>
+              <td><span class="badge">Published</span></td>
+              <td>Apr 10, 2026</td>
+            </tr>
+            <tr>
+              <td>Product Analytics Intensive</td>
+              <td>Product</td>
+              <td>$59</td>
+              <td><span class="badge">Review</span></td>
+              <td>Apr 9, 2026</td>
+            </tr>
+            <tr>
+              <td>Brand Performance Stack</td>
+              <td>Marketing</td>
+              <td>$69</td>
+              <td><span class="badge">Draft</span></td>
+              <td>Apr 7, 2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,140 @@
+<% const pageTitle = "Referral Management"; %>
+<%- include('partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <label for="admin-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Admin</p>
+            <h1 class="text-2xl font-semibold">Referral management</h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a class="btn-primary" href="/admin/referrals/new">Create referral code</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-8">
+      <% if (flashMessages && flashMessages.length) { %>
+        <div class="space-y-2">
+          <% flashMessages.forEach((item) => { %>
+            <div class="card p-4">
+              <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <section class="grid gap-6 md:grid-cols-3">
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total referral codes</p>
+          <p class="text-3xl font-semibold"><%= stats.total_codes %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Active codes</p>
+          <p class="text-3xl font-semibold"><%= stats.active_codes %></p>
+        </div>
+        <div class="stat-card card-glow">
+          <p class="text-xs text-slate-600">Users via admin referrals</p>
+          <p class="text-3xl font-semibold"><%= stats.total_users %></p>
+        </div>
+      </section>
+
+      <section class="card p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-semibold">All referral codes</h2>
+            <p class="text-sm text-slate-500">Manage campaign codes and monitor activation.</p>
+          </div>
+          <form class="flex flex-wrap gap-3" method="GET" action="/admin/referrals">
+            <input class="input w-60" name="search" value="<%= filters.search %>" placeholder="Search code or name" />
+            <select class="input w-48" name="status">
+              <option value="" <%= !filters.status ? 'selected' : '' %>>All statuses</option>
+              <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+              <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+            </select>
+            <button class="btn-outline" type="submit">Filter</button>
+          </form>
+        </div>
+
+        <div class="mt-6 overflow-x-auto">
+          <table class="table-base min-w-[780px]">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Campaign</th>
+                <th>Total users</th>
+                <th>Active users</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!referrals.length) { %>
+                <tr>
+                  <td colspan="7" class="text-center text-sm text-slate-500 py-6">No referral codes found.</td>
+                </tr>
+              <% } %>
+              <% referrals.forEach((ref) => { %>
+                <tr>
+                  <td class="font-semibold"><%= ref.code %></td>
+                  <td>
+                    <p class="text-sm font-semibold"><%= ref.name %></p>
+                    <p class="text-xs text-slate-500"><%= ref.description || 'No description' %></p>
+                  </td>
+                  <td><%= ref.total_users %></td>
+                  <td><%= ref.active_users %></td>
+                  <td>
+                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold <%= ref.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' %>">
+                      <%= ref.is_active ? 'Active' : 'Inactive' %>
+                    </span>
+                  </td>
+                  <td><%= new Date(ref.created_at).toLocaleDateString() %></td>
+                  <td class="space-x-2">
+                    <button
+                      class="btn-outline"
+                      type="button"
+                      data-copy
+                      data-code="<%= ref.code %>"
+                    >Copy link</button>
+                    <a class="btn-outline" href="/admin/referrals/<%= ref.id %>/edit">Edit</a>
+                    <form class="inline" method="POST" action="/admin/referrals/<%= ref.id %>/toggle">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button class="btn-outline" type="submit"><%= ref.is_active ? 'Deactivate' : 'Activate' %></button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll("[data-copy]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const code = button.getAttribute("data-code");
+      const link = `${window.location.origin}/register?ref=${code}`;
+      navigator.clipboard.writeText(link);
+      button.textContent = "Copied";
+      setTimeout(() => {
+        button.textContent = "Copy link";
+      }, 1500);
+    });
+  });
+</script>
+
+</body>
+</html>

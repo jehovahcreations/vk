@@ -1,0 +1,25 @@
+<% const pageTitle = "Special Offer"; %>
+<%- include('partials/head') %>
+
+<div class="min-h-screen bg-slate-50">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="card p-8">
+      <p class="text-xs text-slate-500">Public Offer</p>
+      <h1 class="text-3xl font-semibold mt-2"><%= offer.product_title %></h1>
+      <p class="text-sm text-slate-500 mt-3"><%= offer.product_description || 'Premium pay-and-watch content' %></p>
+
+      <div class="card p-4 card-glow mt-8 max-w-sm">
+        <p class="text-xs text-slate-500">Price</p>
+        <p class="text-2xl font-semibold">INR <%= (Number(amounts.finalAmountInPaise || 0) / 100).toFixed(2) %></p>
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a class="btn-primary" href="/student/products/<%= offer.product_slug %>/checkout?offer=<%= encodeURIComponent(offer.public_code) %>">Buy now</a>
+        <a class="btn-outline" href="/register?ref=<%= encodeURIComponent(offer.owner_affiliate_code || '') %>">Register first</a>
+        <a class="btn-outline" href="/videos">Browse videos</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

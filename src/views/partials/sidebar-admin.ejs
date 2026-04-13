@@ -1,0 +1,75 @@
+<aside class="fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-200 p-6 transform -translate-x-full transition duration-300 ease-in-out peer-checked:translate-x-0 lg:translate-x-0 lg:static lg:flex lg:flex-col lg:h-screen">
+  <div class="flex items-center justify-between mb-10">
+    <div class="flex items-center gap-3">
+      <img src="/images/logo.jpeg" alt="VK Training Consultency" class="h-9 w-9 rounded-xl object-cover" />
+      <div>
+        <p class="font-semibold">Admin Console</p>
+        <p class="text-xs text-slate-500">Operations</p>
+      </div>
+    </div>
+    <label for="admin-drawer" class="lg:hidden text-slate-500 cursor-pointer">Close</label>
+  </div>
+  <nav class="space-y-2 text-sm text-slate-600">
+    <a class="sidebar-link sidebar-link-active" href="/admin/dashboard">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">D</span>
+      Dashboard
+    </a>
+    <a class="sidebar-link" href="/admin/videos">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">V</span>
+      Video Management
+    </a>
+    <a class="sidebar-link" href="/admin/categories">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">C</span>
+      Categories
+    </a>
+    <a class="sidebar-link" href="/admin/students">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">S</span>
+      Students
+    </a>
+    <a class="sidebar-link" href="/admin/students">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">R</span>
+      Resellers / Affiliates
+    </a>
+    <a class="sidebar-link" href="/admin/referrals">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">F</span>
+      Referral Codes
+    </a>
+    <a class="sidebar-link" href="/admin/payments">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">O</span>
+      Orders / Payments
+    </a>
+    <a class="sidebar-link" href="/admin/payments">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">P</span>
+      Payments
+    </a>
+    <a class="sidebar-link" href="/admin/refunds">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">R</span>
+      Refunds
+    </a>
+    <a class="sidebar-link" href="/admin/payment-settings">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">S</span>
+      Payment Settings
+    </a>
+    <a class="sidebar-link" href="/admin/commissions">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">$</span>
+      Commissions / Payouts
+    </a>
+    <a class="sidebar-link" href="/admin/affiliate-links">
+      <span class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">R</span>
+      Reports / Analytics
+    </a>
+  </nav>
+  <div class="mt-auto pt-10 space-y-4">
+    <div class="card p-4">
+      <p class="text-xs text-slate-500">Platform health</p>
+      <p class="text-lg font-semibold">99.98% uptime</p>
+      <div class="mt-3 h-2 rounded-full bg-slate-200">
+        <div class="h-2 rounded-full" style="width: 82%; background: linear-gradient(135deg, #97D8F3, #F58B05);"></div>
+      </div>
+    </div>
+    <form method="POST" action="/logout">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+      <button class="btn-outline w-full" type="submit">Logout</button>
+    </form>
+  </div>
+</aside>

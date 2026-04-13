@@ -1,0 +1,65 @@
+<% const pageTitle = "My Purchases"; %>
+<%- include('../partials/auth-head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="student-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../partials/sidebar-student') %>
+  <label for="student-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="student-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Student</p>
+            <h1 class="text-2xl font-semibold">My purchases</h1>
+          </div>
+        </div>
+        <a class="btn-outline" href="/student/dashboard">Back to dashboard</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8">
+      <section class="card p-6">
+        <div class="mt-2 overflow-x-auto">
+          <table class="table-base min-w-[640px]">
+            <thead>
+              <tr>
+                <th>Video</th>
+                <th>Amount</th>
+                <th>Access</th>
+                <th>Purchased</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!videos || !videos.length) { %>
+                <tr>
+                  <td colspan="5" class="text-center text-sm text-slate-500 py-6">No purchased videos yet.</td>
+                </tr>
+              <% } %>
+              <% (videos || []).forEach((video) => { %>
+                <tr>
+                  <td>
+                    <div class="font-medium"><%= video.title %></div>
+                    <div class="text-xs text-slate-500">/<%= video.slug %></div>
+                  </td>
+                  <td>INR <%= (Number(video.price_in_paise || 0) / 100).toFixed(2) %></td>
+                  <td><span class="badge"><%= video.access_status %></span></td>
+                  <td><%= new Date(video.created_at).toLocaleDateString() %></td>
+                  <td>
+                    <a class="btn-outline" href="/videos/<%= video.slug %>">Watch</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+<% const pageTitle = "Sign in - VidStream"; %>
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+<section class="max-w-6xl mx-auto px-6 py-16 grid gap-10 lg:grid-cols-2">
+  <div class="card p-10">
+    <div class="flex items-center gap-3 mb-6">
+      <img src="/images/logo.jpeg" alt="VK Training Consultency" class="h-10 w-10 rounded-2xl object-cover" />
+      <div>
+        <p class="text-sm font-semibold">VK Training Consultency</p>
+        <p class="text-xs text-slate-500">Secure student access</p>
+      </div>
+    </div>
+    <h2 class="text-3xl font-semibold">Welcome back</h2>
+    <p class="text-slate-500 mt-2">Sign in to continue your premium learning journey.</p>
+    <form class="mt-8 space-y-5">
+      <div>
+        <label class="text-sm font-medium">Email address</label>
+        <input class="input mt-2" placeholder="you@company.com" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Password</label>
+        <input class="input mt-2" type="password" placeholder="********" />
+      </div>
+      <div class="flex items-center justify-between text-sm text-slate-500">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="accent-red-600" /> Remember me
+        </label>
+        <a href="#" class="text-slate-600">Forgot password?</a>
+      </div>
+      <a class="btn-primary w-full text-center" href="/login">Sign in</a>
+    </form>
+  </div>
+  <div class="card p-10">
+    <div class="flex items-center gap-3 mb-6">
+      <img src="/images/logo.jpeg" alt="VK Training Consultency" class="h-10 w-10 rounded-2xl object-cover" />
+      <div>
+        <p class="text-sm font-semibold">VK Training Consultency</p>
+        <p class="text-xs text-slate-500">Create your account</p>
+      </div>
+    </div>
+    <h2 class="text-3xl font-semibold">Create an account</h2>
+    <p class="text-slate-500 mt-2">Join as a student and activate your affiliate link.</p>
+    <form class="mt-8 space-y-5">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="text-sm font-medium">First name</label>
+          <input class="input mt-2" placeholder="Jordan" />
+        </div>
+        <div>
+          <label class="text-sm font-medium">Last name</label>
+          <input class="input mt-2" placeholder="Lee" />
+        </div>
+      </div>
+      <div>
+        <label class="text-sm font-medium">Email address</label>
+        <input class="input mt-2" placeholder="you@company.com" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Password</label>
+        <input class="input mt-2" type="password" placeholder="Create a password" />
+      </div>
+      <div>
+        <label class="text-sm font-medium">Referral code (optional)</label>
+        <input class="input mt-2" placeholder="VID-2026" />
+      </div>
+      <a class="btn-primary w-full text-center" href="/register">Create account</a>
+    </form>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

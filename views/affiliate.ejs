@@ -1,0 +1,239 @@
+<% const pageTitle = "Affiliate Dashboard"; %>
+<%- include('partials/head') %>
+
+<div class="flex min-h-screen">
+  <%- include('partials/sidebar-student') %>
+  <main class="flex-1 bg-slate-50">
+    <div class="px-6 py-8">
+      <% if (flashMessages && flashMessages.length) { %>
+        <div class="space-y-2 mb-6">
+          <% flashMessages.forEach((item) => { %>
+            <div class="card p-4">
+              <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-semibold">Affiliate command center</h1>
+          <p class="text-slate-500">Track referrals, payouts, and campaign performance.</p>
+        </div>
+        <a class="btn-primary" href="#generate-link">Generate new link</a>
+      </div>
+
+      <div class="grid gap-6 mt-8 md:grid-cols-2 xl:grid-cols-4">
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total earnings</p>
+          <p class="text-2xl font-semibold">INR <%= (stats.totalEarningsInPaise / 100).toFixed(2) %></p>
+          <p class="text-xs text-emerald-600">From paid referral purchases</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Referrals</p>
+          <p class="text-2xl font-semibold"><%= stats.totalReferrals %></p>
+          <p class="text-xs text-slate-500"><%= stats.activeToday %> joined today</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Conversion rate</p>
+          <p class="text-2xl font-semibold"><%= Number(stats.conversionRate || 0).toFixed(1) %>%</p>
+          <p class="text-xs text-slate-500">Referred users to buyers</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Next payout</p>
+          <p class="text-2xl font-semibold">INR <%= (stats.nextPayoutInPaise / 100).toFixed(2) %></p>
+          <p class="text-xs text-slate-500"><%= stats.nextPayoutInPaise > 0 ? 'Pending settlement' : 'No pending payout' %></p>
+        </div>
+      </div>
+
+      <div class="grid gap-6 mt-8 lg:grid-cols-3">
+        <div class="card p-6 lg:col-span-2">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold">Referral link</h2>
+            <span class="badge">Copy to share</span>
+          </div>
+          <div class="mt-6 flex flex-col md:flex-row gap-4">
+            <input id="affiliate-link" class="input flex-1" value="<%= referral.referralLink %>" readonly />
+            <button id="affiliate-copy-btn" class="btn-primary" type="button">Copy link</button>
+          </div>
+          <div class="grid gap-4 mt-6 md:grid-cols-3">
+            <div class="card p-4">
+              <p class="text-xs text-slate-500">Promo code</p>
+              <p class="text-lg font-semibold"><%= referral.promoCode %></p>
+            </div>
+            <div class="card p-4">
+              <p class="text-xs text-slate-500">Commission</p>
+              <p class="text-lg font-semibold"><%= Number(referral.commissionPercent || 0).toFixed(2) %>%</p>
+            </div>
+            <div class="card p-4">
+              <p class="text-xs text-slate-500">Tier</p>
+              <p class="text-lg font-semibold"><%= referral.tier %></p>
+            </div>
+          </div>
+        </div>
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold">Wallet</h2>
+          <div class="mt-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <p class="text-sm text-slate-500">Available now</p>
+              <p class="font-semibold">INR <%= (wallet.availableInPaise / 100).toFixed(2) %></p>
+            </div>
+            <div class="flex items-center justify-between">
+              <p class="text-sm text-slate-500">Pending</p>
+              <p class="font-semibold">INR <%= (wallet.pendingInPaise / 100).toFixed(2) %></p>
+            </div>
+            <button class="btn-outline w-full">Request payout</button>
+          </div>
+        </div>
+      </div>
+
+      <section id="generate-link" class="card p-6 mt-8">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Generate public sale link</h2>
+        </div>
+        <form class="grid gap-4 mt-6 md:grid-cols-3" method="POST" action="/student/affiliate/links">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="md:col-span-2">
+            <label class="text-sm font-medium">Video</label>
+            <select class="input mt-2" name="product_id" required>
+              <option value="">Select a video</option>
+              <% (videos || []).forEach((video) => { %>
+                <option value="<%= video.id %>"><%= video.title %> (<%= (Number(video.price_in_paise || 0) / 100).toFixed(2) %> <%= video.currency || 'INR' %>)</option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Markup (%)</label>
+            <input class="input mt-2" type="number" min="0" max="100" step="0.01" name="markup_percent" value="0" required />
+          </div>
+          <div class="md:col-span-3">
+            <button class="btn-primary" type="submit">Create public link</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card p-6 mt-8">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">My public links</h2>
+          <span class="badge"><%= (links || []).length %> links</span>
+        </div>
+        <div class="mt-6 overflow-x-auto">
+          <table class="table-base min-w-[1080px]">
+            <thead>
+              <tr>
+                <th>Video</th>
+                <th>Markup %</th>
+                <th>Public URL</th>
+                <th>Clicks</th>
+                <th>Paid orders</th>
+                <th>Revenue</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!links || !links.length) { %>
+                <tr>
+                  <td colspan="8" class="text-center text-slate-500 py-6">No links generated yet.</td>
+                </tr>
+              <% } %>
+              <% (links || []).forEach((link) => { %>
+                <tr>
+                  <td><%= link.product_title %></td>
+                  <td><%= Number(link.markup_percent || 0).toFixed(2) %>%</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <input class="input w-[320px]" value="<%= link.public_url %>" readonly />
+                      <button type="button" class="btn-outline" data-copy-link="<%= link.public_url %>">Copy</button>
+                    </div>
+                  </td>
+                  <td><%= link.total_clicks %></td>
+                  <td><%= link.paid_orders %></td>
+                  <td>INR <%= (Number(link.paid_amount_in_paise || 0) / 100).toFixed(2) %></td>
+                  <td><span class="badge"><%= link.is_active ? 'active' : 'inactive' %></span></td>
+                  <td>
+                    <form method="POST" action="/student/affiliate/links/<%= link.id %>/toggle">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button class="btn-outline" type="submit"><%= link.is_active ? 'Disable' : 'Enable' %></button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="grid gap-6 mt-8 lg:grid-cols-2">
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold">Campaign analytics</h2>
+          <div class="grid gap-4 mt-6 md:grid-cols-2">
+            <div class="card p-4">
+              <p class="text-xs text-slate-500">Paid orders</p>
+              <p class="text-xl font-semibold"><%= analytics.paidOrders %></p>
+            </div>
+            <div class="card p-4">
+              <p class="text-xs text-slate-500">Referral sales</p>
+              <p class="text-xl font-semibold">INR <%= (analytics.totalSalesInPaise / 100).toFixed(2) %></p>
+            </div>
+          </div>
+        </div>
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold">Recent referrals</h2>
+          <div class="space-y-4 mt-6">
+            <% if (!recentReferrals || !recentReferrals.length) { %>
+              <p class="text-sm text-slate-500">No referred users yet.</p>
+            <% } %>
+            <% (recentReferrals || []).forEach((refUser) => { %>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold"><%= refUser.full_name %></p>
+                  <p class="text-xs text-slate-500"><%= refUser.email %></p>
+                </div>
+                <span class="badge"><%= refUser.purchases_count %> purchases</span>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function () {
+    const linkInput = document.getElementById('affiliate-link');
+    const copyBtn = document.getElementById('affiliate-copy-btn');
+    if (!linkInput || !copyBtn) return;
+
+    copyBtn.addEventListener('click', async function () {
+      try {
+        await navigator.clipboard.writeText(linkInput.value || '');
+        copyBtn.textContent = 'Copied';
+        setTimeout(function () {
+          copyBtn.textContent = 'Copy link';
+        }, 1200);
+      } catch (_) {
+        linkInput.select();
+      }
+    });
+
+    document.querySelectorAll('[data-copy-link]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        const value = btn.getAttribute('data-copy-link') || '';
+        try {
+          await navigator.clipboard.writeText(value);
+          const prev = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(function () {
+            btn.textContent = prev;
+          }, 1200);
+        } catch (_) {
+          // noop
+        }
+      });
+    });
+  })();
+</script>
+
+<%- include('partials/footer') %>

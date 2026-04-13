@@ -1,0 +1,172 @@
+<%- include('../../partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="admin-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Admin</p>
+            <h1 class="text-2xl font-semibold"><%= pageTitle %></h1>
+          </div>
+        </div>
+        <a class="btn-outline" href="/admin/videos">Back to list</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-10">
+      <% if (flashMessages && flashMessages.length) { %>
+        <div class="space-y-2 mb-6">
+          <% flashMessages.forEach((item) => { %>
+            <div class="card p-4">
+              <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <div class="card p-8 max-w-3xl">
+        <form class="space-y-5" method="POST" action="<%= action %>?_csrf=<%= encodeURIComponent(csrfToken) %>" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <input type="hidden" name="thumbnail_url" value="<%= video.thumbnail_url || '' %>" />
+          <div>
+            <label class="text-sm font-medium">Video title</label>
+            <input class="input mt-2" name="title" value="<%= video.title || '' %>" required />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Slug (optional)</label>
+            <input class="input mt-2" name="slug" value="<%= video.slug || '' %>" placeholder="sales-bootcamp" />
+            <p class="text-xs text-slate-500 mt-2">Leave blank to generate from the title.</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Price (INR)</label>
+            <% const priceInRupees = video.price_in_paise ? (Number(video.price_in_paise) / 100).toFixed(2) : ''; %>
+            <input class="input mt-2" name="price_inr" type="number" step="0.01" min="0" value="<%= priceInRupees %>" required />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Category</label>
+            <select class="input mt-2" name="category_id">
+              <option value="">Unassigned</option>
+              <% (categories || []).forEach((category) => { %>
+                <option value="<%= category.id %>" <%= String(video.category_id || '') === String(category.id) ? 'selected' : '' %>>
+                  <%= category.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Thumbnail image</label>
+            <input class="input mt-2" name="thumbnail_file" type="file" accept="image/*" />
+            <p class="text-xs text-slate-500 mt-2">Upload a JPG or PNG thumbnail.</p>
+            <% if (video.thumbnail_url) { %>
+              <div class="mt-3 rounded-2xl overflow-hidden bg-slate-100">
+                <img src="<%= video.thumbnail_url %>" alt="Thumbnail preview" class="w-full h-40 object-cover" />
+              </div>
+            <% } %>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Video link (Google Drive)</label>
+            <input class="input mt-2" name="video_url" value="<%= video.video_url || '' %>" placeholder="https://drive.google.com/file/d/..." />
+            <p class="text-xs text-slate-500 mt-2">Paste a Google Drive share link.</p>
+          </div>
+          <% 
+            const driveMatch = (video.video_url || '').match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+            const idMatch = (video.video_url || '').match(/[?&]id=([^&]+)/i);
+            const driveId = driveMatch ? driveMatch[1] : (idMatch ? idMatch[1] : null);
+            const embedUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : (video.video_url || '');
+          %>
+          <div class="card p-4">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium">Preview</p>
+              <a class="btn-outline" id="video-preview-link" href="<%= video.video_url || '#' %>" target="_blank" rel="noopener">Open link</a>
+            </div>
+            <div class="mt-4 rounded-2xl bg-slate-900 overflow-hidden">
+              <div class="aspect-video" id="video-preview-frame">
+                <% if (embedUrl) { %>
+                  <iframe
+                    class="w-full h-full"
+                    src="<%= embedUrl %>"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                  ></iframe>
+                <% } %>
+              </div>
+              <div class="h-48 flex items-center justify-center text-slate-300 <%= embedUrl ? 'hidden' : '' %>" id="video-preview-empty">
+                <p class="text-sm">Paste a video link to preview.</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Description</label>
+            <textarea class="input mt-2 h-28" name="description" placeholder="Describe the video"><%= video.description || '' %></textarea>
+          </div>
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" name="is_active" class="rounded" <%= video.is_active ? 'checked' : '' %> />
+            Active video
+          </label>
+          <button class="btn-primary" type="submit"><%= submitLabel %></button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>
+<script>
+  (function () {
+    const input = document.querySelector('input[name="video_url"]');
+    const frameContainer = document.getElementById("video-preview-frame");
+    const emptyState = document.getElementById("video-preview-empty");
+    const link = document.getElementById("video-preview-link");
+
+    if (!input || !frameContainer || !emptyState || !link) {
+      return;
+    }
+
+    function toEmbedUrl(value) {
+      if (!value) {
+        return "";
+      }
+      const fileMatch = value.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+      if (fileMatch && fileMatch[1]) {
+        return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+      }
+      const idMatch = value.match(/[?&]id=([^&]+)/i);
+      if (idMatch && idMatch[1]) {
+        return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+      }
+      return value;
+    }
+
+    function updatePreview() {
+      const value = input.value.trim();
+      const embedUrl = toEmbedUrl(value);
+      link.href = value || "#";
+
+      if (!embedUrl) {
+        frameContainer.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+      frameContainer.innerHTML = `
+        <iframe
+          class="w-full h-full"
+          src="${embedUrl}"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+        ></iframe>
+      `;
+    }
+
+    input.addEventListener("input", updatePreview);
+    updatePreview();
+  })();
+</script>

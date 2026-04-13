@@ -1,0 +1,54 @@
+<% const pageTitle = "Webhook Logs"; %>
+<%- include('../../partials/auth-head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-500">Admin</p>
+          <h1 class="text-2xl font-semibold">Webhook logs</h1>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8">
+      <section class="card p-6">
+        <div class="mt-6 overflow-x-auto">
+          <table class="table-base min-w-[720px]">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Type</th>
+                <th>Processed</th>
+                <th>Received</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!webhooks.length) { %>
+                <tr>
+                  <td colspan="4" class="text-center text-sm text-slate-500 py-6">No webhook events yet.</td>
+                </tr>
+              <% } %>
+              <% webhooks.forEach((event) => { %>
+                <tr>
+                  <td><%= event.event_id || '-' %></td>
+                  <td><%= event.event_type %></td>
+                  <td><%= event.processed ? 'Yes' : 'No' %></td>
+                  <td><%= new Date(event.created_at).toLocaleString() %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

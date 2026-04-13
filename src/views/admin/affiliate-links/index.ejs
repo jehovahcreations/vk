@@ -1,0 +1,88 @@
+<% const pageTitle = "Affiliate Link Tracking"; %>
+<%- include('../../partials/auth-head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5">
+        <p class="text-sm text-slate-500">Admin</p>
+        <h1 class="text-2xl font-semibold">Affiliate link tracking</h1>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <section class="grid gap-4 md:grid-cols-5">
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total links</p>
+          <p class="text-2xl font-semibold"><%= stats.totalLinks %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Active links</p>
+          <p class="text-2xl font-semibold"><%= stats.activeLinks %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total clicks</p>
+          <p class="text-2xl font-semibold"><%= stats.totalClicks %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Paid orders</p>
+          <p class="text-2xl font-semibold"><%= stats.totalPaidOrders %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Revenue via links</p>
+          <p class="text-2xl font-semibold">INR <%= (stats.totalPaidAmountInPaise / 100).toFixed(2) %></p>
+        </div>
+      </section>
+
+      <section class="card p-6">
+        <div class="overflow-x-auto">
+          <table class="table-base min-w-[1200px]">
+            <thead>
+              <tr>
+                <th>Owner</th>
+                <th>Video</th>
+                <th>Public code</th>
+                <th>Markup %</th>
+                <th>Clicks</th>
+                <th>Paid orders</th>
+                <th>Revenue</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!links.length) { %>
+                <tr>
+                  <td colspan="9" class="text-center text-sm text-slate-500 py-6">No affiliate links found.</td>
+                </tr>
+              <% } %>
+              <% links.forEach((item) => { %>
+                <tr>
+                  <td>
+                    <div class="font-medium"><%= item.owner_name %></div>
+                    <div class="text-xs text-slate-500"><%= item.owner_email %></div>
+                  </td>
+                  <td><%= item.product_title %></td>
+                  <td class="font-mono text-xs"><%= item.public_code %></td>
+                  <td><%= Number(item.markup_percent || 0).toFixed(2) %>%</td>
+                  <td><%= item.total_clicks %></td>
+                  <td><%= item.paid_orders %></td>
+                  <td>INR <%= (Number(item.paid_amount_in_paise || 0) / 100).toFixed(2) %></td>
+                  <td><span class="badge"><%= item.is_active ? 'active' : 'inactive' %></span></td>
+                  <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

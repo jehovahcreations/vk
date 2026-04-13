@@ -1,0 +1,11 @@
+<div>
+  <label class="text-sm font-medium"><%= label %></label>
+  <input
+    class="input mt-2"
+    type="<%= typeof type !== 'undefined' ? type : 'text' %>"
+    name="<%= name %>"
+    value="<%= typeof value !== 'undefined' ? value : '' %>"
+    placeholder="<%= typeof placeholder !== 'undefined' ? placeholder : '' %>"
+    <%= typeof required !== 'undefined' && required ? 'required' : '' %>
+  />
+</div>

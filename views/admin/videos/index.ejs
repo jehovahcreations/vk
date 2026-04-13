@@ -1,0 +1,110 @@
+<% const pageTitle = "Videos"; %>
+<%- include('../../partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="admin-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Admin</p>
+            <h1 class="text-2xl font-semibold"><%= pageTitle %></h1>
+          </div>
+        </div>
+        <a class="btn-primary" href="/admin/videos/new">Add video</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <% if (flashMessages && flashMessages.length) { %>
+        <div class="space-y-2">
+          <% flashMessages.forEach((item) => { %>
+            <div class="card p-4">
+              <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <section class="card p-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">Video catalog</h2>
+            <p class="text-sm text-slate-500">Manage pricing and visibility for video products.</p>
+          </div>
+          <form class="flex flex-col gap-3 sm:flex-row" method="GET" action="/admin/videos">
+            <input class="input w-full sm:w-64" name="search" placeholder="Search videos" value="<%= filters.search %>" />
+            <select class="input w-full sm:w-44" name="status">
+              <option value="">All statuses</option>
+              <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+              <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+            </select>
+            <button class="btn-outline" type="submit">Filter</button>
+          </form>
+        </div>
+        <div class="mt-6 overflow-x-auto">
+          <table class="table-base min-w-[860px]">
+            <thead>
+              <tr>
+                <th>Video</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!videos || !videos.length) { %>
+                <tr>
+                  <td colspan="6" class="text-center text-slate-500">No videos found.</td>
+                </tr>
+              <% } %>
+              <% videos.forEach((video) => { %>
+                <tr>
+                  <td>
+                    <div class="font-medium"><%= video.title %></div>
+                    <div class="text-xs text-slate-500">/<%= video.slug %></div>
+                  </td>
+                  <td class="text-sm text-slate-600">
+                    <%= video.category_name || '-' %>
+                  </td>
+                  <td class="text-sm text-slate-600">
+                    <%= (Number(video.price_in_paise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: video.currency || 'INR' }) %>
+                  </td>
+                  <td>
+                    <span class="badge <%= video.is_active ? 'badge-success' : 'badge-muted' %>">
+                      <%= video.is_active ? 'Active' : 'Inactive' %>
+                    </span>
+                  </td>
+                  <td class="text-sm text-slate-500">
+                    <%= new Date(video.updated_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) %>
+                  </td>
+                  <td>
+                    <div class="flex items-center justify-end gap-2">
+                      <a class="btn-outline" href="/admin/videos/<%= video.id %>/edit">Edit</a>
+                      <form method="POST" action="/admin/videos/<%= video.id %>/toggle">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button class="btn-outline" type="submit">
+                          <%= video.is_active ? 'Deactivate' : 'Activate' %>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

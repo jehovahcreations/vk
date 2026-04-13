@@ -1,0 +1,74 @@
+<% const pageTitle = "Student Dashboard"; %>
+<%- include('partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="student-drawer" type="checkbox" class="peer hidden" />
+  <%- include('partials/sidebar-student') %>
+  <label for="student-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <label for="student-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Welcome back</p>
+            <h1 class="text-2xl font-semibold"><%= studentName %></h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a class="btn-outline" href="/student/purchases">My videos</a>
+          <a class="btn-soft" href="/videos">Explore Videos</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <section class="card p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-semibold">Shop videos</h2>
+            <p class="text-sm text-slate-500">Browse and purchase to unlock streaming.</p>
+            <% if (filters && filters.search) { %>
+              <p class="text-xs text-slate-500 mt-2">Filtered by: <span class="font-medium text-slate-700"><%= filters.search %></span></p>
+            <% } %>
+          </div>
+          <form class="flex gap-3" method="GET" action="/student/dashboard">
+            <input class="input w-64" name="search" value="<%= filters?.search || '' %>" placeholder="Search videos or category" />
+            <button class="btn-outline" type="submit">Search</button>
+          </form>
+        </div>
+
+        <div class="grid gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-3">
+          <% if (!videos || !videos.length) { %>
+            <div class="text-slate-500">No videos available right now.</div>
+          <% } %>
+          <% (videos || []).forEach((video) => { %>
+            <div class="video-card">
+              <div class="h-40 bg-slate-100 flex items-center justify-center">
+                <% if (video.thumbnail_url) { %>
+                  <img src="<%= video.thumbnail_url %>" alt="<%= video.title %>" class="h-full w-full object-cover" />
+                <% } else { %>
+                  <p class="text-slate-400">Thumbnail</p>
+                <% } %>
+              </div>
+              <div class="p-4 space-y-3">
+                <div>
+                  <p class="text-sm font-semibold"><%= video.title %></p>
+                  <p class="text-xs text-slate-500"><%= video.category_name || 'Video' %></p>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="badge"><%= (Number(video.price_in_paise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: video.currency || 'INR' }) %></span>
+                  <a class="btn-primary" href="/student/products/<%= video.slug %>/checkout">Purchase</a>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

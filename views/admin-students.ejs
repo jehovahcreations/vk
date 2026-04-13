@@ -1,0 +1,74 @@
+<% const pageTitle = "Student Management"; %>
+<%- include('partials/head') %>
+
+<div class="flex min-h-screen">
+  <%- include('partials/sidebar-admin') %>
+  <main class="flex-1 bg-slate-50">
+    <div class="px-6 py-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-semibold">Students & resellers</h1>
+          <p class="text-slate-500">Manage learner access and affiliate tiers.</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="btn-outline">Export list</button>
+          <button class="btn-primary">Add student</button>
+        </div>
+      </div>
+
+      <div class="card p-6 mt-8">
+        <div class="flex flex-wrap gap-3">
+          <input class="input w-60" placeholder="Search students" />
+          <select class="input w-48">
+            <option>Affiliate tier</option>
+            <option>Bronze</option>
+            <option>Silver</option>
+            <option>Gold</option>
+          </select>
+          <select class="input w-48">
+            <option>Status: Any</option>
+            <option>Active</option>
+            <option>Paused</option>
+          </select>
+          <button class="btn-outline">Filter</button>
+        </div>
+        <table class="table-base mt-6">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Role</th>
+              <th>Spend</th>
+              <th>Affiliate tier</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Naomi Fischer</td>
+              <td>Student</td>
+              <td>$420</td>
+              <td>Gold</td>
+              <td><span class="badge">Active</span></td>
+            </tr>
+            <tr>
+              <td>Eric Dalton</td>
+              <td>Reseller</td>
+              <td>$980</td>
+              <td>Silver</td>
+              <td><span class="badge">Active</span></td>
+            </tr>
+            <tr>
+              <td>Lara Singh</td>
+              <td>Student</td>
+              <td>$120</td>
+              <td>Bronze</td>
+              <td><span class="badge">Paused</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,46 @@
+<% const pageTitle = "Transactions"; %>
+<%- include('../partials/auth-head') %>
+
+<section class="max-w-6xl mx-auto px-6 py-16">
+  <div class="card p-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold">Transactions</h2>
+        <p class="text-slate-500">Payment activity across your account.</p>
+      </div>
+      <a class="btn-outline" href="/student/dashboard">Back to dashboard</a>
+    </div>
+    <div class="mt-6 overflow-x-auto">
+      <table class="table-base min-w-[640px]">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Product</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>#ORD-1042</td>
+            <td>Leadership Intensive</td>
+            <td>INR 7,900</td>
+            <td><span class="badge">Paid</span></td>
+            <td>Apr 12, 2026</td>
+          </tr>
+          <tr>
+            <td>#ORD-1032</td>
+            <td>Premium Plan</td>
+            <td>INR 5,900</td>
+            <td><span class="badge">Paid</span></td>
+            <td>Apr 2, 2026</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

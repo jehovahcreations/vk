@@ -1,0 +1,68 @@
+<%- include('../../partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <label for="admin-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Admin</p>
+            <h1 class="text-2xl font-semibold"><%= pageTitle %></h1>
+          </div>
+        </div>
+        <a class="btn-outline" href="/admin/categories">Back to list</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-10">
+      <% if (flashMessages && flashMessages.length) { %>
+        <div class="space-y-2 mb-6">
+          <% flashMessages.forEach((item) => { %>
+            <div class="card p-4">
+              <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <div class="card p-8 max-w-3xl">
+        <form class="space-y-5" method="POST" action="<%= action %>">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div>
+            <label class="text-sm font-medium">Category name</label>
+            <input
+              class="input mt-2"
+              name="name"
+              value="<%= category.name || '' %>"
+              placeholder="Leadership Essentials"
+              required
+            />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Slug (optional)</label>
+            <input
+              class="input mt-2"
+              name="slug"
+              value="<%= category.slug || '' %>"
+              placeholder="leadership-essentials"
+            />
+            <p class="text-xs text-slate-500 mt-2">Leave blank to generate from the name.</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Description</label>
+            <textarea class="input mt-2 h-28" name="description" placeholder="Describe this category"><%= category.description || '' %></textarea>
+          </div>
+          <button class="btn-primary" type="submit"><%= submitLabel %></button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

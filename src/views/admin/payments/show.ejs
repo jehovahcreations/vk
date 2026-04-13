@@ -1,0 +1,48 @@
+<% const pageTitle = "Payment Details"; %>
+<%- include('../../partials/auth-head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('../../partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-500">Admin</p>
+          <h1 class="text-2xl font-semibold">Payment detail</h1>
+        </div>
+        <a class="btn-outline" href="/admin/payments">Back to payments</a>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-6">
+      <section class="grid gap-6 lg:grid-cols-2">
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold">Payment summary</h2>
+          <div class="mt-4 space-y-2 text-sm text-slate-500">
+            <div class="flex items-center justify-between"><span>Status</span><span class="text-slate-900"><%= payment.status %></span></div>
+            <div class="flex items-center justify-between"><span>Amount</span><span class="text-slate-900">INR <%= (payment.amount_in_paise / 100).toFixed(2) %></span></div>
+            <div class="flex items-center justify-between"><span>Method</span><span class="text-slate-900"><%= payment.payment_method || 'N/A' %></span></div>
+            <div class="flex items-center justify-between"><span>Order status</span><span class="text-slate-900"><%= payment.internal_status %></span></div>
+          </div>
+        </div>
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold">Customer</h2>
+          <p class="text-sm text-slate-500 mt-2"><%= payment.student_name %></p>
+          <p class="text-xs text-slate-500"><%= payment.student_email %></p>
+          <p class="text-xs text-slate-500 mt-4">Product: <%= payment.product_title %> (<%= payment.product_type %>)</p>
+        </div>
+      </section>
+
+      <section class="card p-6">
+        <h2 class="text-xl font-semibold">Raw payload</h2>
+        <pre class="mt-4 text-xs bg-slate-100 p-4 rounded-xl overflow-x-auto"><%= JSON.stringify(payment.raw_webhook_payload || payment.raw_callback_payload || {}, null, 2) %></pre>
+      </section>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

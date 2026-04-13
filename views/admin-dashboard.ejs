@@ -1,0 +1,110 @@
+<% const pageTitle = "Admin Dashboard"; %>
+<%- include('partials/head') %>
+
+<div class="min-h-screen bg-slate-50 flex">
+  <input id="admin-drawer" type="checkbox" class="peer hidden" />
+  <%- include('partials/sidebar-admin') %>
+  <label for="admin-drawer" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto transition lg:hidden"></label>
+
+  <div class="flex-1 flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="px-6 py-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <label for="admin-drawer" class="lg:hidden h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center cursor-pointer">Menu</label>
+          <div>
+            <p class="text-sm text-slate-500">Admin Dashboard</p>
+            <h1 class="text-2xl font-semibold">Platform control panel</h1>
+          </div>
+        </div>
+        <div class="flex flex-1 items-center gap-3 lg:justify-end">
+          <div class="hidden md:flex items-center gap-2 flex-1 max-w-md">
+            <input class="input" placeholder="Search students, videos, payouts" />
+          </div>
+          <button class="btn-outline">Add Video</button>
+          <button class="btn-outline">Add Category</button>
+          <button class="btn-primary">Create Plan</button>
+          <button class="h-10 w-10 rounded-full border border-slate-200 flex items-center justify-center">N</button>
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-full bg-slate-200"></div>
+            <div class="hidden sm:block">
+              <p class="text-sm font-semibold"><%= adminName %></p>
+              <p class="text-xs text-slate-500">Super Admin</p>
+            </div>
+          </div>
+          <select class="input w-44 hidden xl:block">
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>Year to date</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-6 py-8 space-y-10">
+      <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total students</p>
+          <p class="text-3xl font-semibold"><%= stats.totalStudents.toLocaleString('en-IN') %></p>
+          <p class="text-xs text-slate-500">Registered student accounts</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Active resellers</p>
+          <p class="text-3xl font-semibold"><%= stats.activeResellers.toLocaleString('en-IN') %></p>
+          <p class="text-xs text-slate-500"><%= stats.newResellersThisWeek.toLocaleString('en-IN') %> new this week</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Total videos</p>
+          <p class="text-3xl font-semibold"><%= stats.totalVideos.toLocaleString('en-IN') %></p>
+          <p class="text-xs text-slate-500"><%= stats.inactiveVideos.toLocaleString('en-IN') %> inactive</p>
+        </div>
+        <div class="stat-card card-glow">
+          <p class="text-xs text-slate-600">Total revenue</p>
+          <p class="text-3xl font-semibold">INR <%= (stats.totalRevenueInPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+          <p class="text-xs text-slate-600">Paid orders only</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Monthly sales</p>
+          <p class="text-3xl font-semibold">INR <%= (stats.monthlySalesInPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+          <p class="text-xs text-slate-500"><%= stats.monthlyPaidOrders.toLocaleString('en-IN') %> paid orders this month</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Pending payouts</p>
+          <p class="text-3xl font-semibold">INR <%= (stats.pendingPayoutAmountInPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+          <p class="text-xs text-slate-500"><%= stats.pendingPayoutCount.toLocaleString('en-IN') %> pending commission records</p>
+        </div>
+      </section>
+
+      <section class="grid gap-6 lg:grid-cols-3">
+        <div class="card p-6 lg:col-span-2">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold">Revenue analytics</h2>
+            <span class="badge">Last 30 days</span>
+          </div>
+          <div class="chart-placeholder mt-6 flex items-center justify-center text-slate-500">Revenue & subscription growth</div>
+        </div>
+        <div class="space-y-6">
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold">Payment status</h3>
+            <div class="mt-4 space-y-3 text-sm">
+              <div class="flex items-center justify-between"><span>Captured</span><span class="font-semibold"><%= stats.paymentStatus.captured %></span></div>
+              <div class="flex items-center justify-between"><span>Pending</span><span class="font-semibold"><%= stats.paymentStatus.pending %></span></div>
+              <div class="flex items-center justify-between"><span>Failed</span><span class="font-semibold"><%= stats.paymentStatus.failed %></span></div>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold">Subscription mix</h3>
+            <div class="mt-4 space-y-3 text-sm">
+              <div class="flex items-center justify-between"><span>Videos</span><span class="font-semibold"><%= stats.subscriptionMix.video %></span></div>
+              <div class="flex items-center justify-between"><span>Courses</span><span class="font-semibold"><%= stats.subscriptionMix.course %></span></div>
+              <div class="flex items-center justify-between"><span>Plans</span><span class="font-semibold"><%= stats.subscriptionMix.plan %></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

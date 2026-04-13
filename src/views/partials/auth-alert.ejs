@@ -1,0 +1,9 @@
+<% if (flashMessages && flashMessages.length) { %>
+  <div class="space-y-2 mb-6">
+    <% flashMessages.forEach((item) => { %>
+      <div class="card p-4">
+        <p class="text-sm <%= item.type === 'error' ? 'text-red-600' : 'text-emerald-600' %>"><%= item.message %></p>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
