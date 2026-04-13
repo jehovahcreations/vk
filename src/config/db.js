@@ -1,12 +1,12 @@
 const { Pool } = require("pg");
 const env = require("./env");
 
-if (!env.databaseUrl) {
-  console.warn("DATABASE_URL is not set. Database operations will fail.");
-}
-
 const pool = new Pool({
-  connectionString: env.databaseUrl
+  user: env.dbUser || "postgres",
+  host: env.dbHost || "localhost",
+  database: env.dbName || "vk_training",
+  password: String(env.dbPassword || "Jesmysav!234567890"),
+  port: Number(env.dbPort || 5432)
 });
 
 module.exports = pool;
