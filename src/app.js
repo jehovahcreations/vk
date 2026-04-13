@@ -64,7 +64,7 @@ app.get("/", (req, res) => {
   if (req.session?.user?.role === "student") {
     return res.redirect("/student/dashboard");
   }
-  return res.render("home");
+  return res.render("index");
 });
 
 app.use((err, req, res, next) => {
