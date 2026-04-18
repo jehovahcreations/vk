@@ -1,15 +1,26 @@
 const videoService = require("../services/video.service");
 const affiliateLinkService = require("../services/affiliateLink.service");
+const purchaseService = require("../services/purchase.service");
 const { toGoogleDriveEmbedUrl, toGoogleDriveStreamUrl, toGoogleDriveViewUrl, extractGoogleDriveId } = require("../utils/googleDrive");
 const { addFlash } = require("../utils/flashMessages");
 
 async function renderList(req, res) {
   const search = req.query.search || "";
-
   const videos = await videoService.listActiveVideos({ search });
+  let purchasedProductIds = new Set();
+
+  if (req.session?.user?.role === "student") {
+    const productIds = await purchaseService.listUserActivePurchasedProductIds(req.session.user.id);
+    purchasedProductIds = new Set(productIds.map((id) => String(id)));
+  }
+
+  const videosWithAccess = videos.map((video) => ({
+    ...video,
+    hasAccess: purchasedProductIds.has(String(video.id))
+  }));
 
   res.render("videos", {
-    videos,
+    videos: videosWithAccess,
     filters: { search }
   });
 }
@@ -19,6 +30,16 @@ async function renderWatch(req, res) {
   if (!video) {
     addFlash(req, "error", "Video not found.");
     return res.redirect("/videos");
+  }
+
+  const hasAccess = await purchaseService.hasActivePurchaseForProduct({
+    userId: req.session.user.id,
+    productId: video.id
+  });
+
+  if (!hasAccess) {
+    addFlash(req, "error", "Please purchase this video to watch.");
+    return res.redirect(`/student/products/${video.slug}/checkout`);
   }
 
   const videoUrl = video?.metadata?.video_url || "";

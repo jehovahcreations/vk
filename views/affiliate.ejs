@@ -93,7 +93,7 @@
         </div>
         <form class="grid gap-4 mt-6 md:grid-cols-3" method="POST" action="/student/affiliate/links">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <div class="md:col-span-2">
+          <div class="md:col-span-3">
             <label class="text-sm font-medium">Video</label>
             <select class="input mt-2" name="product_id" required>
               <option value="">Select a video</option>
@@ -101,10 +101,6 @@
                 <option value="<%= video.id %>"><%= video.title %> (<%= (Number(video.price_in_paise || 0) / 100).toFixed(2) %> <%= video.currency || 'INR' %>)</option>
               <% }) %>
             </select>
-          </div>
-          <div>
-            <label class="text-sm font-medium">Markup (%)</label>
-            <input class="input mt-2" type="number" min="0" max="100" step="0.01" name="markup_percent" value="0" required />
           </div>
           <div class="md:col-span-3">
             <button class="btn-primary" type="submit">Create public link</button>
@@ -118,11 +114,10 @@
           <span class="badge"><%= (links || []).length %> links</span>
         </div>
         <div class="mt-6 overflow-x-auto">
-          <table class="table-base min-w-[1080px]">
+          <table class="table-base min-w-[980px]">
             <thead>
               <tr>
                 <th>Video</th>
-                <th>Markup %</th>
                 <th>Public URL</th>
                 <th>Clicks</th>
                 <th>Paid orders</th>
@@ -134,13 +129,12 @@
             <tbody>
               <% if (!links || !links.length) { %>
                 <tr>
-                  <td colspan="8" class="text-center text-slate-500 py-6">No links generated yet.</td>
+                  <td colspan="7" class="text-center text-slate-500 py-6">No links generated yet.</td>
                 </tr>
               <% } %>
               <% (links || []).forEach((link) => { %>
                 <tr>
                   <td><%= link.product_title %></td>
-                  <td><%= Number(link.markup_percent || 0).toFixed(2) %>%</td>
                   <td>
                     <div class="flex items-center gap-2">
                       <input class="input w-[320px]" value="<%= link.public_url %>" readonly />

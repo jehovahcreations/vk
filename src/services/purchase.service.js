@@ -85,5 +85,9 @@ async function createPurchaseOrder({ userId, productSlug, affiliateOfferCode = n
 
 module.exports = {
   createPurchaseOrder,
-  listUserPurchasedVideos: (userId) => purchaseRepository.listUserPurchasedVideos(userId)
+  listUserPurchasedVideos: (userId) => purchaseRepository.listUserPurchasedVideos(userId),
+  hasActivePurchaseForProduct: ({ userId, productId }) =>
+    purchaseRepository.hasActivePurchaseForProduct({ userId, productId }),
+  listUserActivePurchasedProductIds: (userId) =>
+    purchaseRepository.listUserActivePurchasedProductIds(userId)
 };

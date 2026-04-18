@@ -1,4 +1,9 @@
 <% const pageTitle = "VK Training Consultency"; %>
+<%
+  const stats = homepageStats || {};
+  const formatCount = (value) => Number(value || 0).toLocaleString('en-IN');
+  const formatCurrency = (valueInPaise) => `INR ${(Number(valueInPaise || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+%>
 <%- include('partials/head') %>
 <%- include('partials/navbar') %>
 
@@ -18,15 +23,15 @@
       </div>
       <div class="flex items-center gap-8 pt-6">
         <div>
-          <p class="text-2xl font-semibold">350+</p>
-          <p class="text-sm text-slate-500">Curated courses</p>
+          <p class="text-2xl font-semibold"><%= formatCount(stats.totalCourses) %></p>
+          <p class="text-sm text-slate-500">Live video courses</p>
         </div>
         <div>
-          <p class="text-2xl font-semibold">48k</p>
+          <p class="text-2xl font-semibold"><%= formatCount(stats.totalLearners) %></p>
           <p class="text-sm text-slate-500">Active learners</p>
         </div>
         <div>
-          <p class="text-2xl font-semibold">$2.4M</p>
+          <p class="text-2xl font-semibold"><%= formatCurrency(stats.totalAffiliateEarningsInPaise) %></p>
           <p class="text-sm text-slate-500">Affiliate earnings</p>
         </div>
       </div>
@@ -37,14 +42,14 @@
       </div>
       <div class="mt-6 grid gap-4 md:grid-cols-2">
         <div class="stat-card">
-          <p class="text-xs text-slate-500">Weekly payout</p>
-          <p class="text-xl font-semibold">$860</p>
-          <p class="text-xs text-emerald-600">+12% from last week</p>
+          <p class="text-xs text-slate-500">7-day affiliate payout</p>
+          <p class="text-xl font-semibold"><%= formatCurrency(stats.weeklyPayoutInPaise) %></p>
+          <p class="text-xs text-slate-500">Credited in the last 7 days</p>
         </div>
         <div class="stat-card">
-          <p class="text-xs text-slate-500">Completion rate</p>
-          <p class="text-xl font-semibold">92%</p>
-          <p class="text-xs text-slate-500">Across premium tracks</p>
+          <p class="text-xs text-slate-500">Payment success rate</p>
+          <p class="text-xl font-semibold"><%= Number(stats.paymentSuccessRate || 0).toFixed(1) %>%</p>
+          <p class="text-xs text-slate-500"><%= formatCount(stats.capturedPayments) %> captured payments</p>
         </div>
       </div>
     </div>

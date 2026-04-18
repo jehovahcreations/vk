@@ -33,9 +33,8 @@
             </div>
             <% if (offerPreview) { %>
               <div class="card p-4">
-                <p class="text-sm text-slate-500">Affiliate markup</p>
-                <p class="text-sm font-semibold"><%= Number(offerPreview.markupPercent || 0).toFixed(2) %>%</p>
-                <p class="text-xs text-slate-500 mt-2">Base: <%= (Number(offerPreview.baseAmountInPaise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: product.currency || 'INR' }) %> · Markup: <%= (Number(offerPreview.markupAmountInPaise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: product.currency || 'INR' }) %></p>
+                <p class="text-sm text-slate-500">Affiliate link applied</p>
+                <p class="text-xs text-slate-500 mt-2">You are buying through a valid public referral link.</p>
               </div>
             <% } %>
             <div class="flex items-center justify-between text-sm text-slate-500">

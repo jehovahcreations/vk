@@ -2,18 +2,8 @@ const crypto = require("crypto");
 const productRepository = require("../repositories/product.repository");
 const affiliateLinkRepository = require("../repositories/affiliateLink.repository");
 
-function parseMarkupPercent(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num) || num < 0 || num > 100) {
-    const error = new Error("Markup must be between 0 and 100.");
-    error.code = "MARKUP_INVALID";
-    throw error;
-  }
-  return Number(num.toFixed(2));
-}
-
-function computeAmounts(basePriceInPaise, markupPercent) {
-  const markupAmount = Math.round((basePriceInPaise * markupPercent) / 100);
+function computeAmounts(basePriceInPaise) {
+  const markupAmount = 0;
   return {
     baseAmountInPaise: basePriceInPaise,
     markupAmountInPaise: markupAmount,
@@ -35,7 +25,7 @@ async function generateUniquePublicCode() {
   return code;
 }
 
-async function createUserAffiliateLink({ ownerUserId, productId, markupPercent }) {
+async function createUserAffiliateLink({ ownerUserId, productId }) {
   const product = await productRepository.findById(productId);
   if (!product || product.type !== "video" || !product.is_active) {
     const error = new Error("Active video not found.");
@@ -43,14 +33,13 @@ async function createUserAffiliateLink({ ownerUserId, productId, markupPercent }
     throw error;
   }
 
-  const parsedMarkup = parseMarkupPercent(markupPercent);
   const publicCode = await generateUniquePublicCode();
 
   return affiliateLinkRepository.createAffiliateLink({
     ownerUserId,
     productId: product.id,
     publicCode,
-    markupPercent: parsedMarkup
+    markupPercent: 0
   });
 }
 
@@ -78,7 +67,7 @@ async function getPublicOffer(publicCode, req) {
     userAgent: req.get("user-agent")
   });
 
-  const amounts = computeAmounts(Number(link.product_price_in_paise || 0), Number(link.markup_percent || 0));
+  const amounts = computeAmounts(Number(link.product_price_in_paise || 0));
   return {
     link,
     amounts
@@ -109,7 +98,7 @@ async function resolveOfferForCheckout({ publicCode, productId, buyerUserId }) {
     throw error;
   }
 
-  const amounts = computeAmounts(Number(link.product_price_in_paise || 0), Number(link.markup_percent || 0));
+  const amounts = computeAmounts(Number(link.product_price_in_paise || 0));
 
   return {
     affiliateLinkId: link.id,
@@ -117,7 +106,7 @@ async function resolveOfferForCheckout({ publicCode, productId, buyerUserId }) {
     referralType: "student",
     adminReferralId: null,
     ...amounts,
-    markupPercent: Number(link.markup_percent || 0)
+    markupPercent: 0
   };
 }
 

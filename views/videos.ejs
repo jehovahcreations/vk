@@ -40,8 +40,23 @@
             <span class="badge"><%= (Number(video.price_in_paise || 0) / 100).toLocaleString('en-IN', { style: 'currency', currency: video.currency || 'INR' }) %></span>
           </div>
           <p class="text-xs text-slate-500"><%= video.description || 'Premium lesson access' %></p>
-          <% const watchLink = isAuthenticated ? `/videos/${video.slug}` : '/login'; %>
-          <a class="btn-primary w-full" href="<%= watchLink %>">Watch now</a>
+          <% const studentLoggedIn = isAuthenticated && isStudent; %>
+          <% const canWatch = studentLoggedIn && video.hasAccess; %>
+          <% const actionLink = !isAuthenticated
+            ? '/login'
+            : canWatch
+              ? `/videos/${video.slug}`
+              : studentLoggedIn
+                ? `/student/products/${video.slug}/checkout`
+                : '/access-denied'; %>
+          <% const actionLabel = !isAuthenticated
+            ? 'Login to unlock'
+            : canWatch
+              ? 'Watch now'
+              : studentLoggedIn
+                ? 'Purchase to watch'
+                : 'Student access only'; %>
+          <a class="btn-primary w-full" href="<%= actionLink %>"><%= actionLabel %></a>
         </div>
       </div>
     <% }) %>

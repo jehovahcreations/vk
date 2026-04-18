@@ -115,6 +115,34 @@ async function listUserPurchasedVideos(userId) {
   return result.rows;
 }
 
+async function hasActivePurchaseForProduct({ userId, productId }) {
+  const result = await pool.query(
+    `SELECT 1
+     FROM user_purchases
+     WHERE user_id = $1
+       AND product_id = $2
+       AND access_status = 'active'
+       AND (access_end_at IS NULL OR access_end_at > NOW())
+     LIMIT 1`,
+    [userId, productId]
+  );
+
+  return result.rowCount > 0;
+}
+
+async function listUserActivePurchasedProductIds(userId) {
+  const result = await pool.query(
+    `SELECT product_id
+     FROM user_purchases
+     WHERE user_id = $1
+       AND access_status = 'active'
+       AND (access_end_at IS NULL OR access_end_at > NOW())`,
+    [userId]
+  );
+
+  return result.rows.map((row) => row.product_id);
+}
+
 module.exports = {
   createPurchaseOrder,
   updateOrderStatus,
@@ -122,5 +150,7 @@ module.exports = {
   findByRazorpayOrderId,
   listOrders,
   createUserPurchase,
-  listUserPurchasedVideos
+  listUserPurchasedVideos,
+  hasActivePurchaseForProduct,
+  listUserActivePurchasedProductIds
 };

@@ -13,6 +13,15 @@ async function renderCheckout(req, res) {
     return res.redirect("/student/dashboard");
   }
 
+  const hasAccess = await purchaseService.hasActivePurchaseForProduct({
+    userId: req.session.user.id,
+    productId: product.id
+  });
+  if (hasAccess) {
+    addFlash(req, "success", "You already have access to this video.");
+    return res.redirect(`/videos/${product.slug}`);
+  }
+
   const offerCode = req.query.offer || "";
   let offerPreview = null;
   if (offerCode) {

@@ -69,8 +69,7 @@ async function handleCreateAffiliateLink(req, res) {
   try {
     await affiliateLinkService.createUserAffiliateLink({
       ownerUserId: req.session.user.id,
-      productId: req.body.product_id,
-      markupPercent: req.body.markup_percent
+      productId: req.body.product_id
     });
     addFlash(req, "success", "Public affiliate link created.");
   } catch (error) {
