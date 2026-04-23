@@ -9,6 +9,8 @@
     "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./public/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/styles/tailwind.css -o ./public/styles.css --watch",
     "seed:admin": "node scripts/seed-admin.js",
+    "migrate:commission": "node scripts/migrate-add-commission-percent.js",
+    "migrate:commission-payouts": "node scripts/migrate-commission-payouts.js",
     "seed:products": "psql \"$DATABASE_URL\" -f db/seed-products.sql"
   },
   "dependencies": {

@@ -35,7 +35,7 @@ async function getAffiliateDashboard({ userId, appOrigin }) {
       nextPayoutInPaise: earnings.summary.pendingEarningsInPaise
     },
     wallet: {
-      availableInPaise: earnings.summary.creditedEarningsInPaise,
+      availableInPaise: earnings.summary.availableBalanceInPaise,
       pendingInPaise: earnings.summary.pendingEarningsInPaise
     },
     referral: {

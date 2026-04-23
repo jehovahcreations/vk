@@ -20,22 +20,29 @@
     </header>
 
     <main class="flex-1 px-6 py-8 space-y-6">
-      <section class="grid gap-4 md:grid-cols-3">
+      <section class="grid gap-4 md:grid-cols-4">
         <div class="stat-card">
           <p class="text-xs text-slate-500">Total earned</p>
           <p class="text-2xl font-semibold">INR <%= (summary.totalEarningsInPaise / 100).toFixed(2) %></p>
         </div>
         <div class="stat-card">
-          <p class="text-xs text-slate-500">Credited</p>
+          <p class="text-xs text-slate-500">Credited (gross)</p>
           <p class="text-2xl font-semibold">INR <%= (summary.creditedEarningsInPaise / 100).toFixed(2) %></p>
         </div>
         <div class="stat-card">
-          <p class="text-xs text-slate-500">Pending</p>
-          <p class="text-2xl font-semibold">INR <%= (summary.pendingEarningsInPaise / 100).toFixed(2) %></p>
+          <p class="text-xs text-slate-500">Paid out</p>
+          <p class="text-2xl font-semibold">INR <%= ((summary.paidOutInPaise || 0) / 100).toFixed(2) %></p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-slate-500">Available balance</p>
+          <p class="text-2xl font-semibold">INR <%= ((summary.availableBalanceInPaise || 0) / 100).toFixed(2) %></p>
         </div>
       </section>
 
       <section class="card p-6">
+        <div class="mb-4">
+          <span class="badge">Pending: INR <%= (summary.pendingEarningsInPaise / 100).toFixed(2) %></span>
+        </div>
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold">Commission history</h2>
           <span class="badge"><%= summary.totalCommissions %> records</span>
@@ -69,6 +76,40 @@
                   <td>INR <%= (Number(item.commission_amount_in_paise || 0) / 100).toFixed(2) %></td>
                   <td><span class="badge"><%= item.status %></span></td>
                   <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Payout history</h2>
+          <span class="badge"><%= (payouts || []).length %> records</span>
+        </div>
+        <div class="mt-6 overflow-x-auto">
+          <table class="table-base min-w-[780px]">
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Paid at</th>
+                <th>Recorded by</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!payouts || !payouts.length) { %>
+                <tr>
+                  <td colspan="4" class="text-center text-slate-500 py-6">No payouts have been recorded for your account yet.</td>
+                </tr>
+              <% } %>
+              <% (payouts || []).forEach((item) => { %>
+                <tr>
+                  <td>INR <%= (Number(item.amount_in_paise || 0) / 100).toFixed(2) %></td>
+                  <td><%= new Date(item.paid_at || item.created_at).toLocaleString() %></td>
+                  <td><%= item.created_by_name || 'Admin' %></td>
+                  <td class="text-sm text-slate-500"><%= item.notes || '-' %></td>
                 </tr>
               <% }) %>
             </tbody>
