@@ -58,6 +58,11 @@ app.use("/student", paymentRoutes);
 
 app.get("/auth", (req, res) => res.redirect("/login"));
 
+app.get("/terms", (req, res) => res.render("terms"));
+app.get("/privacy", (req, res) => res.render("privacy"));
+app.get("/shipping", (req, res) => res.render("shipping"));
+app.get("/refund", (req, res) => res.render("refund"));
+
 app.get("/", async (req, res, next) => {
   if (req.session?.user?.role === "admin") {
     return res.redirect("/admin/dashboard");
