@@ -94,14 +94,26 @@ async function verifyPayment(req, res) {
         redirectUrl: "/student/payments/failed"
       });
     }
-    await paymentService.verifyPayment({
+    const { order } = await paymentService.verifyPayment({
       orderId: req.body.razorpay_order_id,
       paymentId: req.body.razorpay_payment_id,
       signature: req.body.razorpay_signature,
       keySecret
     });
-    return res.json({ redirectUrl: "/student/payments/success" });
+    const product = await productRepository.findById(order.product_id);
+    const successUrl = product?.slug
+      ? `/student/payments/success?video=${encodeURIComponent(product.slug)}`
+      : "/student/payments/success";
+
+    return res.json({ redirectUrl: successUrl });
   } catch (error) {
+    console.error("Payment verification failed:", {
+      message: error.message,
+      code: error.code,
+      orderId: req.body?.razorpay_order_id,
+      paymentId: req.body?.razorpay_payment_id
+    });
+
     return res.status(400).json({
       error: error.message || "Payment verification failed",
       redirectUrl: "/student/payments/failed"
@@ -109,8 +121,18 @@ async function verifyPayment(req, res) {
   }
 }
 
-function renderSuccess(req, res) {
-  res.render("student/payment-success");
+async function renderSuccess(req, res) {
+  const videoSlug = typeof req.query.video === "string" ? req.query.video : "";
+  let redirectUrl = videoSlug ? `/videos/${encodeURIComponent(videoSlug)}` : "";
+
+  if (!redirectUrl) {
+    const latestVideo = await purchaseService.findLatestPaidVideoForUser(req.session.user.id);
+    redirectUrl = latestVideo?.slug
+      ? `/videos/${encodeURIComponent(latestVideo.slug)}`
+      : "/student/purchases";
+  }
+
+  res.render("student/payment-success", { redirectUrl });
 }
 
 function renderFailed(req, res) {
@@ -118,6 +140,15 @@ function renderFailed(req, res) {
 }
 
 async function renderPurchases(req, res) {
+  try {
+    await paymentService.reconcileRecentCapturedVideoPaymentsForUser(req.session.user.id);
+  } catch (error) {
+    console.error("Recent payment reconciliation failed:", {
+      message: error.message,
+      userId: req.session.user.id
+    });
+  }
+
   const videos = await purchaseService.listUserPurchasedVideos(req.session.user.id);
   res.render("student/purchases", { videos });
 }

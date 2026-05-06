@@ -50,10 +50,11 @@ async function createPurchaseOrder({
 
 async function updateOrderStatus(id, status, client) {
   const runner = client || pool;
-  await runner.query(
-    "UPDATE purchase_orders SET internal_status = $2 WHERE id = $1",
+  const result = await runner.query(
+    "UPDATE purchase_orders SET internal_status = $2, updated_at = NOW() WHERE id = $1 RETURNING *",
     [id, status]
   );
+  return result.rows[0] || null;
 }
 
 async function findById(id) {
@@ -73,6 +74,22 @@ async function findByRazorpayOrderId(razorpayOrderId) {
   return result.rows[0];
 }
 
+async function findLatestOrderForUserProductWithRazorpay({ userId, productId }) {
+  const result = await pool.query(
+    `SELECT
+       purchase_orders.*,
+       razorpay_orders.razorpay_order_id
+     FROM purchase_orders
+     JOIN razorpay_orders ON razorpay_orders.purchase_order_id = purchase_orders.id
+     WHERE purchase_orders.user_id = $1
+       AND purchase_orders.product_id = $2
+     ORDER BY purchase_orders.created_at DESC
+     LIMIT 1`,
+    [userId, productId]
+  );
+  return result.rows[0];
+}
+
 async function listOrders() {
   const result = await pool.query(
     `SELECT purchase_orders.*, users.full_name AS student_name, products.title AS product_title
@@ -86,30 +103,34 @@ async function listOrders() {
 
 async function createUserPurchase({ userId, productId, purchaseOrderId, paymentId, client }) {
   const runner = client || pool;
-  await runner.query(
+  const result = await runner.query(
     `INSERT INTO user_purchases (user_id, product_id, purchase_order_id, payment_id)
      VALUES ($1, $2, $3, $4)
-     ON CONFLICT DO NOTHING`,
+     ON CONFLICT DO NOTHING
+     RETURNING *`,
     [userId, productId, purchaseOrderId, paymentId]
   );
+  return result.rows[0] || null;
 }
 
 async function listUserPurchasedVideos(userId) {
   const result = await pool.query(
     `SELECT
-        user_purchases.id,
-        user_purchases.access_status,
-        user_purchases.created_at,
+        COALESCE(user_purchases.id, purchase_orders.id) AS id,
+        COALESCE(user_purchases.access_status, 'active') AS access_status,
+        COALESCE(user_purchases.created_at, purchase_orders.created_at) AS created_at,
         products.title,
         products.slug,
         products.thumbnail_url,
         products.price_in_paise,
         products.currency
-     FROM user_purchases
-     JOIN products ON products.id = user_purchases.product_id
-     WHERE user_purchases.user_id = $1
+     FROM purchase_orders
+     JOIN products ON products.id = purchase_orders.product_id
+     LEFT JOIN user_purchases ON user_purchases.purchase_order_id = purchase_orders.id
+     WHERE purchase_orders.user_id = $1
        AND products.type = 'video'
-     ORDER BY user_purchases.created_at DESC`,
+       AND purchase_orders.internal_status = 'paid'
+     ORDER BY COALESCE(user_purchases.created_at, purchase_orders.created_at) DESC`,
     [userId]
   );
   return result.rows;
@@ -117,17 +138,62 @@ async function listUserPurchasedVideos(userId) {
 
 async function hasActivePurchaseForProduct({ userId, productId }) {
   const result = await pool.query(
-    `SELECT 1
-     FROM user_purchases
-     WHERE user_id = $1
-       AND product_id = $2
-       AND access_status = 'active'
-       AND (access_end_at IS NULL OR access_end_at > NOW())
+    `SELECT 1 FROM (
+       SELECT 1
+       FROM user_purchases
+       WHERE user_id = $1
+         AND product_id = $2
+         AND access_status = 'active'
+         AND (access_end_at IS NULL OR access_end_at > NOW())
+
+       UNION ALL
+
+       SELECT 1
+       FROM purchase_orders
+       WHERE user_id = $1
+         AND product_id = $2
+         AND internal_status = 'paid'
+     ) access
      LIMIT 1`,
     [userId, productId]
   );
 
   return result.rowCount > 0;
+}
+
+async function findLatestPaidVideoForUser(userId) {
+  const result = await pool.query(
+    `SELECT products.slug
+     FROM purchase_orders
+     JOIN products ON products.id = purchase_orders.product_id
+     WHERE purchase_orders.user_id = $1
+       AND purchase_orders.internal_status = 'paid'
+       AND products.type = 'video'
+     ORDER BY purchase_orders.created_at DESC
+     LIMIT 1`,
+    [userId]
+  );
+
+  return result.rows[0];
+}
+
+async function listRecentUnpaidVideoOrdersForUser(userId, limit = 5) {
+  const result = await pool.query(
+    `SELECT
+       purchase_orders.*,
+       razorpay_orders.razorpay_order_id
+     FROM purchase_orders
+     JOIN products ON products.id = purchase_orders.product_id
+     JOIN razorpay_orders ON razorpay_orders.purchase_order_id = purchase_orders.id
+     WHERE purchase_orders.user_id = $1
+       AND purchase_orders.internal_status IN ('created', 'pending')
+       AND products.type = 'video'
+     ORDER BY purchase_orders.created_at DESC
+     LIMIT $2`,
+    [userId, limit]
+  );
+
+  return result.rows;
 }
 
 async function listUserActivePurchasedProductIds(userId) {
@@ -136,7 +202,14 @@ async function listUserActivePurchasedProductIds(userId) {
      FROM user_purchases
      WHERE user_id = $1
        AND access_status = 'active'
-       AND (access_end_at IS NULL OR access_end_at > NOW())`,
+       AND (access_end_at IS NULL OR access_end_at > NOW())
+
+     UNION
+
+     SELECT product_id
+     FROM purchase_orders
+     WHERE user_id = $1
+       AND internal_status = 'paid'`,
     [userId]
   );
 
@@ -148,9 +221,12 @@ module.exports = {
   updateOrderStatus,
   findById,
   findByRazorpayOrderId,
+  findLatestOrderForUserProductWithRazorpay,
   listOrders,
   createUserPurchase,
   listUserPurchasedVideos,
   hasActivePurchaseForProduct,
+  findLatestPaidVideoForUser,
+  listRecentUnpaidVideoOrdersForUser,
   listUserActivePurchasedProductIds
 };

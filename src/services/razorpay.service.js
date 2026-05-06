@@ -10,6 +10,12 @@ async function createOrder({ amountInPaise, currency, receipt, notes }) {
   });
 }
 
+async function fetchOrderPayments(orderId) {
+  const client = await getRazorpayClient();
+  return client.orders.fetchPayments(orderId);
+}
+
 module.exports = {
-  createOrder
+  createOrder,
+  fetchOrderPayments
 };

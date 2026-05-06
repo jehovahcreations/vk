@@ -1,6 +1,7 @@
 const videoService = require("../services/video.service");
 const affiliateLinkService = require("../services/affiliateLink.service");
 const purchaseService = require("../services/purchase.service");
+const paymentService = require("../services/payment.service");
 const { toGoogleDriveEmbedUrl, toGoogleDriveStreamUrl, toGoogleDriveViewUrl, extractGoogleDriveId } = require("../utils/googleDrive");
 const { addFlash } = require("../utils/flashMessages");
 
@@ -32,10 +33,25 @@ async function renderWatch(req, res) {
     return res.redirect("/videos");
   }
 
-  const hasAccess = await purchaseService.hasActivePurchaseForProduct({
+  let hasAccess = await purchaseService.hasActivePurchaseForProduct({
     userId: req.session.user.id,
     productId: video.id
   });
+
+  if (!hasAccess) {
+    try {
+      hasAccess = await paymentService.reconcileCapturedPaymentForProduct({
+        userId: req.session.user.id,
+        productId: video.id
+      });
+    } catch (error) {
+      console.error("Payment reconciliation failed:", {
+        message: error.message,
+        userId: req.session.user.id,
+        productId: video.id
+      });
+    }
+  }
 
   if (!hasAccess) {
     addFlash(req, "error", "Please purchase this video to watch.");

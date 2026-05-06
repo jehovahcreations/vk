@@ -88,6 +88,7 @@ module.exports = {
   listUserPurchasedVideos: (userId) => purchaseRepository.listUserPurchasedVideos(userId),
   hasActivePurchaseForProduct: ({ userId, productId }) =>
     purchaseRepository.hasActivePurchaseForProduct({ userId, productId }),
+  findLatestPaidVideoForUser: (userId) => purchaseRepository.findLatestPaidVideoForUser(userId),
   listUserActivePurchasedProductIds: (userId) =>
     purchaseRepository.listUserActivePurchasedProductIds(userId)
 };

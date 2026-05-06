@@ -11,9 +11,11 @@ async function createPayment({
   razorpaySignature,
   rawCallbackPayload,
   rawWebhookPayload,
-  verifiedAt
+  verifiedAt,
+  client
 }) {
-  const result = await pool.query(
+  const runner = client || pool;
+  const result = await runner.query(
     `INSERT INTO payments (
       purchase_order_id,
       razorpay_order_id,
@@ -53,13 +55,23 @@ async function findByRazorpayPaymentId(paymentId) {
   return result.rows[0];
 }
 
+async function findByRazorpayPaymentIdForUpdate(paymentId, client) {
+  const runner = client || pool;
+  const result = await runner.query(
+    "SELECT * FROM payments WHERE razorpay_payment_id = $1 LIMIT 1 FOR UPDATE",
+    [paymentId]
+  );
+  return result.rows[0];
+}
+
 async function findByOrderId(orderId) {
   const result = await pool.query("SELECT * FROM payments WHERE purchase_order_id = $1", [orderId]);
   return result.rows[0];
 }
 
-async function updatePaymentStatus({ id, status, verifiedAt, rawWebhookPayload, failureReason }) {
-  const result = await pool.query(
+async function updatePaymentStatus({ id, status, verifiedAt, rawWebhookPayload, failureReason, client }) {
+  const runner = client || pool;
+  const result = await runner.query(
     `UPDATE payments
      SET status = $2,
          verified_at = COALESCE($3, verified_at),
@@ -102,6 +114,7 @@ async function findPaymentDetail(id) {
 module.exports = {
   createPayment,
   findByRazorpayPaymentId,
+  findByRazorpayPaymentIdForUpdate,
   findByOrderId,
   updatePaymentStatus,
   listPayments,

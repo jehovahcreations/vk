@@ -3,6 +3,7 @@ const paymentRepository = require("../repositories/payment.repository");
 const purchaseRepository = require("../repositories/purchase.repository");
 const { createUserPurchase } = require("../repositories/purchase.repository");
 const commissionService = require("./commission.service");
+const razorpayService = require("./razorpay.service");
 const { verifyRazorpaySignature } = require("../utils/razorpaySignature");
 
 async function verifyPayment({ orderId, paymentId, signature, keySecret }) {
@@ -29,7 +30,7 @@ async function verifyPayment({ orderId, paymentId, signature, keySecret }) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const existing = await paymentRepository.findByRazorpayPaymentId(paymentId);
+    const existing = await paymentRepository.findByRazorpayPaymentIdForUpdate(paymentId, client);
     let payment = existing;
 
     if (!payment) {
@@ -48,19 +49,24 @@ async function verifyPayment({ orderId, paymentId, signature, keySecret }) {
           razorpay_signature: signature
         },
         rawWebhookPayload: null,
-        verifiedAt: new Date()
+        verifiedAt: new Date(),
+        client
       });
     } else {
-      await paymentRepository.updatePaymentStatus({
+      payment = await paymentRepository.updatePaymentStatus({
         id: payment.id,
         status: "captured",
         verifiedAt: new Date(),
         rawWebhookPayload: null,
-        failureReason: null
+        failureReason: null,
+        client
       });
     }
 
-    await purchaseRepository.updateOrderStatus(order.id, "paid", client);
+    const paidOrder = await purchaseRepository.updateOrderStatus(order.id, "paid", client);
+    if (!paidOrder) {
+      throw new Error("Unable to mark purchase order as paid.");
+    }
 
     await createUserPurchase({
       userId: order.user_id,
@@ -70,14 +76,20 @@ async function verifyPayment({ orderId, paymentId, signature, keySecret }) {
       client
     });
 
+    await client.query("COMMIT");
+
     await commissionService.creditReferralCommission({
       purchaseOrderId: order.id,
-      paymentId: payment.id,
-      client
+      paymentId: payment.id
+    }).catch((error) => {
+      console.error("Commission credit failed after payment access grant:", {
+        message: error.message,
+        purchaseOrderId: order.id,
+        paymentId: payment.id
+      });
     });
 
-    await client.query("COMMIT");
-    return payment;
+    return { payment, order };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
@@ -103,6 +115,111 @@ async function markPaymentFailed({ orderId, reason }) {
   });
 }
 
+async function reconcileCapturedPaymentForProduct({ userId, productId }) {
+  const order = await purchaseRepository.findLatestOrderForUserProductWithRazorpay({
+    userId,
+    productId
+  });
+
+  return reconcileCapturedPaymentForOrder(order);
+}
+
+async function reconcileCapturedPaymentForOrder(order) {
+  if (!order?.razorpay_order_id) {
+    return false;
+  }
+
+  const payments = await razorpayService.fetchOrderPayments(order.razorpay_order_id);
+  const capturedPayment = (payments?.items || []).find((payment) => payment.status === "captured");
+  if (!capturedPayment) {
+    return false;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    let payment = await paymentRepository.findByRazorpayPaymentIdForUpdate(capturedPayment.id, client);
+    if (!payment) {
+      payment = await paymentRepository.createPayment({
+        purchaseOrderId: order.id,
+        razorpayOrderId: order.razorpay_order_id,
+        razorpayPaymentId: capturedPayment.id,
+        amountInPaise: order.amount_in_paise,
+        currency: order.currency,
+        status: "captured",
+        paymentMethod: capturedPayment.method || null,
+        razorpaySignature: null,
+        rawCallbackPayload: null,
+        rawWebhookPayload: {
+          source: "razorpay_order_payment_reconciliation",
+          payment: capturedPayment
+        },
+        verifiedAt: new Date(),
+        client
+      });
+    } else if (payment.status !== "captured") {
+      payment = await paymentRepository.updatePaymentStatus({
+        id: payment.id,
+        status: "captured",
+        verifiedAt: new Date(),
+        rawWebhookPayload: {
+          source: "razorpay_order_payment_reconciliation",
+          payment: capturedPayment
+        },
+        failureReason: null,
+        client
+      });
+    }
+
+    const paidOrder = await purchaseRepository.updateOrderStatus(order.id, "paid", client);
+    if (!paidOrder) {
+      throw new Error("Unable to mark purchase order as paid.");
+    }
+
+    await createUserPurchase({
+      userId: order.user_id,
+      productId: order.product_id,
+      purchaseOrderId: order.id,
+      paymentId: payment.id,
+      client
+    });
+
+    await client.query("COMMIT");
+
+    await commissionService.creditReferralCommission({
+      purchaseOrderId: order.id,
+      paymentId: payment.id
+    }).catch((error) => {
+      console.error("Commission credit failed after payment reconciliation:", {
+        message: error.message,
+        purchaseOrderId: order.id,
+        paymentId: payment.id
+      });
+    });
+
+    return true;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function reconcileRecentCapturedVideoPaymentsForUser(userId) {
+  const orders = await purchaseRepository.listRecentUnpaidVideoOrdersForUser(userId);
+  let repairedCount = 0;
+
+  for (const order of orders) {
+    if (await reconcileCapturedPaymentForOrder(order)) {
+      repairedCount += 1;
+    }
+  }
+
+  return repairedCount;
+}
+
 async function listPayments() {
   return paymentRepository.listPayments();
 }
@@ -114,6 +231,8 @@ async function getPaymentDetail(id) {
 module.exports = {
   verifyPayment,
   markPaymentFailed,
+  reconcileCapturedPaymentForProduct,
+  reconcileRecentCapturedVideoPaymentsForUser,
   listPayments,
   getPaymentDetail
 };

@@ -111,16 +111,34 @@
       description: data.product.description || "Premium content access",
       order_id: data.orderId,
       handler: async function (res) {
-        const verifyResponse = await fetch("/student/payments/verify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-csrf-token": "<%= csrfToken %>"
-          },
-          body: JSON.stringify(res)
-        });
-        const verifyData = await verifyResponse.json();
-        window.location.href = verifyData.redirectUrl || "/student/payments/success";
+        try {
+          const verifyResponse = await fetch("/student/payments/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-csrf-token": "<%= csrfToken %>"
+            },
+            body: JSON.stringify(res)
+          });
+
+          let verifyData = {};
+          try {
+            verifyData = await verifyResponse.json();
+          } catch (error) {
+            verifyData = { error: "Payment verification response was invalid." };
+          }
+
+          if (!verifyResponse.ok) {
+            alert(verifyData.error || "Payment verification failed. Please contact support.");
+            window.location.href = verifyData.redirectUrl || "/student/payments/failed";
+            return;
+          }
+
+          window.location.href = verifyData.redirectUrl || "/student/payments/success";
+        } catch (error) {
+          alert("Payment verification could not reach the server. Please contact support.");
+          window.location.href = "/student/payments/failed";
+        }
       },
       theme: { color: "#CE0303" }
     };

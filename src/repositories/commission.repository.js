@@ -36,13 +36,12 @@ async function creditCommissionForPaidOrder({ purchaseOrderId, paymentId, client
         AND po.referral_type = 'student'
         AND po.referred_by_user_id IS NOT NULL
         AND COALESCE(upline.commission_percent, 0) > 0
-      ON CONFLICT (purchase_order_id, beneficiary_user_id)
-      DO UPDATE SET
-        payment_id = EXCLUDED.payment_id,
-        commission_percent = EXCLUDED.commission_percent,
-        commission_amount_in_paise = EXCLUDED.commission_amount_in_paise,
-        status = 'credited',
-        updated_at = NOW()
+        AND NOT EXISTS (
+          SELECT 1
+          FROM referral_commissions existing
+          WHERE existing.purchase_order_id = po.id
+            AND existing.beneficiary_user_id = upline.id
+        )
       RETURNING *`,
       [purchaseOrderId, paymentId]
     );
